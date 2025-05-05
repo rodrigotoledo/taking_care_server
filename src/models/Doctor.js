@@ -13,13 +13,11 @@ const Doctor = sequelize.define('Doctor', {
   crm: {
     type: DataTypes.STRING(20),
     allowNull: false,
-    unique: true,
-    comment: 'Número de registro no CRM'
+    unique: true
   },
-  crmUf: {
+  crm_uf: {
     type: DataTypes.STRING(2),
-    allowNull: false,
-    comment: 'UF do CRM'
+    allowNull: false
   },
   fcmTokens: {
     type: DataTypes.ARRAY(DataTypes.STRING),
@@ -55,7 +53,6 @@ const Doctor = sequelize.define('Doctor', {
   },
   availability: {
     type: DataTypes.JSON,
-    comment: 'Horários de trabalho (ex: {seg: [8,18]})'
   },
 
   // ===== DADOS DE ACESSO =====
@@ -66,7 +63,7 @@ const Doctor = sequelize.define('Doctor', {
   timestamps: true,
   paranoid: true, // Soft delete
   indexes: [
-    { unique: true, fields: ['crm', 'crmUf'] },
+    { unique: true, fields: ['crm', 'crm_uf'] },
     { fields: ['specialty'] } // Para buscas rápidas
   ],
   hooks: {

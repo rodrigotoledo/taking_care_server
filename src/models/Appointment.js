@@ -5,12 +5,10 @@ const Appointment = sequelize.define('Appointment', {
   date: {
     type: DataTypes.DATE,
     allowNull: false,
-    comment: 'Data e hora do atendimento'
   },
   duration: {
     type: DataTypes.INTEGER,
     defaultValue: 30,
-    comment: 'Duração em minutos'
   },
   status: {
     type: DataTypes.ENUM(
@@ -24,26 +22,22 @@ const Appointment = sequelize.define('Appointment', {
   },
   notes: {
     type: DataTypes.TEXT,
-    comment: 'Observações do médico'
   },
   prescription: {
     type: DataTypes.TEXT,
-    comment: 'Medicamentos prescritos'
   },
   examRequest: {
     type: DataTypes.TEXT,
-    comment: 'Exames solicitados'
   },
   nextAppointment: {
     type: DataTypes.DATE,
-    comment: 'Data do retorno'
   }
 }, {
   tableName: 'appointments',
   indexes: [
     {
       unique: true,
-      fields: ['date', 'DoctorId'] // Impede sobreposição de horários
+      fields: ['date', 'doctor_id'] // Impede sobreposição de horários
     }
   ]
 });
