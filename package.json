@@ -1,0 +1,35 @@
+{
+  "name": "taking_care",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "migrate": "npx sequelize-cli db:migrate"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@sendgrid/mail": "^8.1.5",
+    "aws-sdk": "^2.1692.0",
+    "cors": "^2.8.5",
+    "cpf-cnpj-validator": "^1.0.3",
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "firebase-admin": "^13.3.0",
+    "joi": "^17.13.3",
+    "jsonwebtoken": "^9.0.2",
+    "nodemailer": "^7.0.2",
+    "onesignal-node": "^3.4.0",
+    "pg": "^8.15.6",
+    "sequelize": "^6.37.7",
+    "sequelize-cli": "^6.6.3",
+    "twilio": "^5.6.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  }
+}
