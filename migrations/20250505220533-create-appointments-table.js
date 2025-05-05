@@ -12,12 +12,10 @@ module.exports = {
       date: {
         type: Sequelize.DATE,
         allowNull: false,
-        comment: 'Data e hora do atendimento'
       },
       duration: {
         type: Sequelize.INTEGER,
         defaultValue: 30,
-        comment: 'Duração em minutos'
       },
       status: {
         type: Sequelize.ENUM(
@@ -31,19 +29,15 @@ module.exports = {
       },
       notes: {
         type: Sequelize.TEXT,
-        comment: 'Observações do médico'
       },
       prescription: {
         type: Sequelize.TEXT,
-        comment: 'Medicamentos prescritos'
       },
       exam_request: {
         type: Sequelize.TEXT,
-        comment: 'Exames solicitados'
       },
       next_appointment: {
         type: Sequelize.DATE,
-        comment: 'Data do retorno'
       },
       doctor_id: {
         type: Sequelize.INTEGER,

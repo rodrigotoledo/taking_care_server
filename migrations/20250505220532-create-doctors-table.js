@@ -19,12 +19,10 @@ module.exports = {
         type: Sequelize.STRING(20),
         allowNull: false,
         unique: true,
-        comment: 'Número de registro no CRM'
       },
       crm_uf: {
         type: Sequelize.STRING(2),
         allowNull: false,
-        comment: 'UF do CRM'
       },
       fcm_tokens: {
         type: Sequelize.ARRAY(Sequelize.STRING),
@@ -69,7 +67,6 @@ module.exports = {
       },
       availability: {
         type: Sequelize.JSONB,
-        comment: 'Horários de trabalho'
       },
 
       // Dados de acesso
