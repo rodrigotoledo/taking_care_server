@@ -1,0 +1,67 @@
+# Arquivos de log
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Diretórios de ambiente
+node_modules/
+dist/
+build/
+.temp/
+.out/
+
+# Cache
+.cache/
+.yarn/cache/
+.yarn/unplugged/
+.yarn/build-state.yml
+.yarn/install-state.gz
+.pnp.*
+
+# Variáveis de ambiente
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+
+# Configurações do IDE/Editor
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Arquivos do sistema
+.DS_Store
+Thumbs.db
+
+# Arquivos de cobertura de testes
+coverage/
+.nyc_output/
+
+# Arquivos de pacote
+*.tgz
+
+# TypeScript
+*.tsbuildinfo
+
+# Arquivos de configuração local
+.eslintcache
+
+# Lockfiles (use apenas um, dependendo do gerenciador de pacotes)
+# yarn.lock (se você usa Yarn)
+# package-lock.json (se você usa npm)
+# pnpm-lock.yaml (se você usa pnpm)
+
+# Arquivos do Jest
+jest.config.js
+/junit.xml
+
+# Arquivos do Electron
+release/
+app/
