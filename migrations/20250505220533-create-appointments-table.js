@@ -19,13 +19,13 @@ module.exports = {
       },
       status: {
         type: Sequelize.ENUM(
-          'agendado',
-          'confirmado',
-          'cancelado',
-          'realizado',
-          'faltou'
+          'scheduled',
+          'confirmed',
+          'canceled',
+          'finished',
+          'missing'
         ),
-        defaultValue: 'agendado'
+        defaultValue: 'scheduled'
       },
       notes: {
         type: Sequelize.TEXT,
@@ -71,16 +71,16 @@ module.exports = {
       }
     });
 
-    // Índice para evitar agendamentos duplicados no mesmo horário
+    // Index to avoid duplicate appointments at the same time
     await queryInterface.addIndex('appointments', ['date', 'doctor_id'], {
       name: 'appointments_date_doctor_unique',
       unique: true
     });
 
-    // Índice para buscas por status
+    // Find index for status
     await queryInterface.addIndex('appointments', ['status']);
 
-    // Índice para buscas por paciente
+    // Index for search for patients
     await queryInterface.addIndex('appointments', ['patient_id']);
   },
 

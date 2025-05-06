@@ -48,8 +48,8 @@ module.exports = {
       gender: faker.helpers.arrayElement(genders),
       address: `${faker.location.streetAddress()}, ${faker.location.city()} - ${faker.location.state()}`,
       email: 'patient@example.com',
-      password: 'example',
-      password_confirmation: 'example',
+      password: 'password@example123',
+      password_confirmation: 'password@example123',
       phone: faker.phone.number('+55 ## 9#### ####'),
       fcm_tokens: [faker.string.alphanumeric(152)],
       blood_type: faker.helpers.arrayElement(bloodTypes),
@@ -204,7 +204,7 @@ module.exports = {
       pathologies.push({
         name: name,
         icd10: `E${faker.number.int({ min: 10, max: 99 })}.${faker.number.int({ min: 0, max: 9 })}`,
-        severity: faker.helpers.arrayElement(['leve', 'moderada', 'grave']),
+        severity: faker.helpers.arrayElement(['lower', 'moderate', 'grave']),
         is_chronic: isChronic,
         symptoms: faker.lorem.paragraph() + '\n' + faker.lorem.paragraph(),
         treatment: isChronic

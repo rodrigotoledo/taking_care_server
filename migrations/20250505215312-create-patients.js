@@ -70,7 +70,7 @@ module.exports = {
       }
     });
 
-    // Adiciona índice único para email
+    // Adds a single index for email
     await queryInterface.addIndex('patients', ['email'], {
       name: 'patients_email_index',
       unique: true,
@@ -79,7 +79,7 @@ module.exports = {
       }
     });
 
-    // Adiciona índice para buscas por nome
+    // Adds index for name searches
     await queryInterface.addIndex('patients', ['name']);
   },
 

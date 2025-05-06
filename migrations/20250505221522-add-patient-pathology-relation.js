@@ -46,7 +46,7 @@ module.exports = {
       }
     });
 
-    // Adiciona índice único composto
+    // Adds a single compound index
     await queryInterface.addIndex('patient_pathologies',
       ['patient_id', 'pathology_id'], {
         name: 'patient_pathology_unique',

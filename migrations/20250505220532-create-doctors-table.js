@@ -10,7 +10,7 @@ module.exports = {
         autoIncrement: true
       },
 
-      // Dados pessoais
+      // personal data
       name: {
         type: Sequelize.STRING,
         allowNull: false
@@ -29,18 +29,16 @@ module.exports = {
         defaultValue: []
       },
 
-      // Contato
+      // Contact
       email: {
         type: Sequelize.STRING,
         unique: true
       },
       password: {
         type: Sequelize.STRING,
-        allowNull: false
       },
       password_confirmation: {
         type: Sequelize.STRING,
-        allowNull: false
       },
       phone: {
         type: Sequelize.STRING(20)
@@ -49,7 +47,7 @@ module.exports = {
         type: Sequelize.STRING(20)
       },
 
-      // Dados profissionais
+      // Professional data
       specialty: {
         type: Sequelize.STRING,
         allowNull: false
@@ -68,7 +66,7 @@ module.exports = {
         type: Sequelize.INTEGER
       },
 
-      // Disponibilidade
+      // Availability
       is_active: {
         type: Sequelize.BOOLEAN,
         defaultValue: true
@@ -77,7 +75,7 @@ module.exports = {
         type: Sequelize.JSONB,
       },
 
-      // Dados de acesso
+      // Access data
       photo_url: {
         type: Sequelize.STRING
       },
@@ -102,16 +100,16 @@ module.exports = {
       }
     });
 
-    // Índice composto único para CRM+UF
+    // Single compound index for CRM+UF
     await queryInterface.addIndex('doctors', ['crm', 'crm_uf'], {
       name: 'doctors_crm_uf_unique',
       unique: true
     });
 
-    // Índice para busca por especialidade
+    // Index for search for specialty
     await queryInterface.addIndex('doctors', ['specialty']);
 
-    // Índice para busca por sub-especialidades
+    // Index for sub-specialties
     await queryInterface.addConstraint('doctors', {
       type: 'CHECK',
       name: 'sub_specialties_array_check',

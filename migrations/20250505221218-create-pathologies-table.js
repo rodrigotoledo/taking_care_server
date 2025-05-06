@@ -18,8 +18,8 @@ module.exports = {
         type: Sequelize.STRING(10)
       },
       severity: {
-        type: Sequelize.ENUM('leve', 'moderada', 'grave'),
-        defaultValue: 'moderada'
+        type: Sequelize.ENUM('lower', 'moderate', 'grave'),
+        defaultValue: 'moderate'
       },
       is_chronic: {
         type: Sequelize.BOOLEAN,
@@ -43,7 +43,7 @@ module.exports = {
       }
     });
 
-    // Índice único para código CID-10
+    // Single index for CID-10 code
     await queryInterface.addIndex('pathologies', ['icd10'], {
       name: 'pathologies_icd10_unique',
       unique: true,
@@ -54,10 +54,10 @@ module.exports = {
       }
     });
 
-    // Índice para busca por gravidade
+    // Index for search for gravity
     await queryInterface.addIndex('pathologies', ['severity']);
 
-    // Índice para patologias crônicas
+    // Index for chronic pathologies
     await queryInterface.addIndex('pathologies', ['is_chronic']);
   },
 

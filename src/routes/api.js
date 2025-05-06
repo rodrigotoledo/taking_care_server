@@ -15,7 +15,7 @@ const { authenticate } = require('../middlewares/auth');
 router.post('/login', AuthController.login);
 router.post('/logout', (req, res) => {
   // Na prática, o logout é client-side (apagar o token)
-  return res.json({ message: 'Logout realizado' });
+  return res.json({ message: 'Logout finished' });
 });
 
 // ===== [ PACIENTES ] =====
