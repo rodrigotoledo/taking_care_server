@@ -1,7 +1,6 @@
 const Joi = require('joi');
 const { cpf } = require('cpf-cnpj-validator');
 
-// Schemas reutilizáveis
 const schemas = {
   createPatient: Joi.object({
     name: Joi.string().min(3).required(),
@@ -25,7 +24,7 @@ module.exports = {
   validateRequest: (schemaName) => (req, res, next) => {
     const schema = schemas[schemaName];
     if (!schema) {
-      return res.status(500).json({ error: 'Schema de validação não encontrado' });
+      return res.status(500).json({ error: 'Validation Schema Not Found' });
     }
 
     const { error } = schema.validate(req.body, { abortEarly: false });
