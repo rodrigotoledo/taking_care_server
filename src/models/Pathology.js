@@ -11,8 +11,8 @@ const Pathology = sequelize.define('Pathology', {
     type: DataTypes.STRING(10),
   },
   severity: {
-    type: DataTypes.ENUM('leve', 'moderada', 'grave'),
-    defaultValue: 'moderada'
+    type: DataTypes.ENUM('lower', 'moderate', 'grave'),
+    defaultValue: 'moderate'
   },
   isChronic: {
     type: DataTypes.BOOLEAN,

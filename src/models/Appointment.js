@@ -12,13 +12,13 @@ const Appointment = sequelize.define('Appointment', {
   },
   status: {
     type: DataTypes.ENUM(
-      'agendado',
-      'confirmado',
-      'cancelado',
-      'realizado',
-      'faltou'
+      'scheduled',
+      'confirmed',
+      'canceled',
+      'finished',
+      'missing'
     ),
-    defaultValue: 'agendado'
+    defaultValue: 'scheduled'
   },
   notes: {
     type: DataTypes.TEXT,
@@ -37,7 +37,7 @@ const Appointment = sequelize.define('Appointment', {
   indexes: [
     {
       unique: true,
-      fields: ['date', 'doctor_id'] // Impede sobreposição de horários
+      fields: ['date', 'doctor_id'] // Prevents schedule overlapping
     }
   ]
 });

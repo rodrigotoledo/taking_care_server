@@ -2,12 +2,11 @@ const { DataTypes } = require('sequelize');
 const sequelize = require('../../config/sequelize')
 
 const Doctor = sequelize.define('Doctor', {
-  // ===== DADOS PESSOAIS =====
   name: {
     type: DataTypes.STRING,
     allowNull: false,
     validate: {
-      notEmpty: { msg: 'Nome é obrigatório' }
+      notEmpty: true
     }
   },
   crm: {
@@ -24,29 +23,34 @@ const Doctor = sequelize.define('Doctor', {
     defaultValue: []
   },
 
-  // ===== CONTATO =====
   email: {
     type: DataTypes.STRING,
     validate: { isEmail: true },
     unique: true
   },
+  password: {
+    type: DataTypes.STRING,
+    validate: { notEmpty: true },
+  },
+  passwordConfirmation: {
+    type: DataTypes.STRING,
+    validate: { notEmpty: true },
+  },
   phone: { type: DataTypes.STRING(20) },
   emergencyPhone: { type: DataTypes.STRING(20) },
 
-  // ===== DADOS PROFISSIONAIS =====
   specialty: {
     type: DataTypes.STRING,
     allowNull: false
   },
   subSpecialties: {
-    type: DataTypes.ARRAY(DataTypes.STRING), // PostgreSQL
+    type: DataTypes.ARRAY(DataTypes.STRING),
     defaultValue: []
   },
   residency: { type: DataTypes.STRING },
   medicalSchool: { type: DataTypes.STRING },
   graduationYear: { type: DataTypes.INTEGER },
 
-  // ===== DISPONIBILIDADE =====
   isActive: {
     type: DataTypes.BOOLEAN,
     defaultValue: true
@@ -55,16 +59,15 @@ const Doctor = sequelize.define('Doctor', {
     type: DataTypes.JSONB,
   },
 
-  // ===== DADOS DE ACESSO =====
   photoUrl: { type: DataTypes.STRING },
   bio: { type: DataTypes.TEXT }
 }, {
   tableName: 'doctors',
   timestamps: true,
-  paranoid: true, // Soft delete
+  paranoid: true,
   indexes: [
     { unique: true, fields: ['crm', 'crm_uf'] },
-    { fields: ['specialty'] } // Para buscas rápidas
+    { fields: ['specialty'] }
   ],
   hooks: {
     beforeValidate: (doctor) => {
@@ -79,7 +82,7 @@ const Doctor = sequelize.define('Doctor', {
 Doctor.prototype.getActiveAppointments = async function() {
   return await this.getAppointments({
     where: {
-      status: ['agendado', 'confirmado'],
+      status: ['scheduled', 'confirmed'],
       date: { [Op.gte]: new Date() }
     }
   });
