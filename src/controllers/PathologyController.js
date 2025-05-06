@@ -1,13 +1,9 @@
 const { Pathology, Patient, PatientPathology } = require('../models');
 const { Op } = require('sequelize');
 const Joi = require('joi');
-const { cid10Codes } = require('../utils/cid10'); // Array com códigos CID-10 válidos
+const { cid10Codes } = require('../utils/cid10');
 
 module.exports = {
-  /**
-   * Lista todas as patologias com filtros
-   * GET /pathologies
-   */
   async list(req, res) {
     try {
       const { search, isChronic, page = 1, limit = 20 } = req.query;
@@ -53,10 +49,6 @@ module.exports = {
     }
   },
 
-  /**
-   * Cria uma nova patologia
-   * POST /pathologies
-   */
   async create(req, res) {
     try {
       // Validação com Joi (exemplo)
@@ -112,10 +104,6 @@ module.exports = {
     }
   },
 
-  /**
-   * Lista pacientes com determinada patologia
-   * GET /pathologies/:id/patients
-   */
   async getPatients(req, res) {
     try {
       const { page = 1, limit = 10, withAppointments } = req.query;
@@ -137,7 +125,7 @@ module.exports = {
           model: Appointment,
           as: 'appointments',
           attributes: ['id', 'date', 'status'],
-          where: { status: 'realizado' },
+          where: { status: 'finished' },
           required: false
         }];
       }
@@ -165,10 +153,6 @@ module.exports = {
     }
   },
 
-  /**
-   * Estatísticas de patologias (extra)
-   * GET /pathologies/stats
-   */
   async stats(req, res) {
     try {
       const mostCommon = await Pathology.findAll({

@@ -4,15 +4,11 @@ const moment = require('moment');
 const { sendNotification } = require('../services/notificationService');
 
 module.exports = {
-  /**
-   * Cria um novo agendamento
-   * POST /appointments
-   */
   async create(req, res) {
     try {
       const { doctorId, patientId, date, notes } = req.body;
 
-      // 1. Verifica conflito de horário
+      // 1. Checks time conflict
       const existingAppointment = await Appointment.findOne({
         where: {
           doctorId,
@@ -22,13 +18,13 @@ module.exports = {
               moment(date).add(29, 'minutes').toDate()
             ]
           },
-          status: { [Op.in]: ['agendado', 'confirmado'] }
+          status: { [Op.in]: ['scheduled', 'confirmed'] }
         }
       });
 
       if (existingAppointment) {
         return res.status(409).json({
-          error: 'Conflito de horário',
+          error: 'Time conflict',
           conflictingAppointment: {
             id: existingAppointment.id,
             date: existingAppointment.date
@@ -36,23 +32,23 @@ module.exports = {
         });
       }
 
-      // 2. Verifica se o médico está disponível nesse horário
+      // 2. Check if the doctor is available at this time
       const doctor = await Doctor.findByPk(doctorId);
       if (!doctor.availability) {
-        return res.status(400).json({ error: 'Médico não tem disponibilidade cadastrada' });
+        return res.status(400).json({ error: 'Doctor has no registered availability' });
       }
 
       const appointmentDay = moment(date).format('ddd').toLowerCase().substring(0, 3);
       const availableHours = doctor.availability[appointmentDay];
 
       if (!availableHours) {
-        return res.status(400).json({ error: 'Médico não atende neste dia' });
+        return res.status(400).json({ error: 'Doctor does not attend this day' });
       }
 
       const appointmentHour = moment(date).hours();
       if (appointmentHour < availableHours[0] || appointmentHour >= availableHours[1]) {
         return res.status(400).json({
-          error: 'Fora do horário disponível',
+          error: 'Out of time available',
           availableHours
         });
       }
@@ -63,7 +59,7 @@ module.exports = {
         patientId,
         date,
         notes,
-        status: 'agendado'
+        status: 'scheduled'
       });
 
       // 4. Notifica as partes (médico e paciente)
@@ -76,35 +72,28 @@ module.exports = {
 
     } catch (error) {
       return res.status(400).json({
-        error: 'Falha ao criar agendamento',
+        error: 'Failure when creating Appointment',
         details: error.message
       });
     }
   },
 
-  /**
-   * Cancela um agendamento
-   * PUT /appointments/:id/cancel
-   */
   async cancel(req, res) {
     try {
       const appointment = await Appointment.findByPk(req.params.id);
       if (!appointment) {
-        return res.status(404).json({ error: 'Agendamento não encontrado' });
+        return res.status(404).json({ error: 'Appointment not found' });
       }
 
-      // Valida se já não está cancelado
       if (appointment.status === 'cancelado') {
-        return res.status(400).json({ error: 'Agendamento já cancelado' });
+        return res.status(400).json({ error: 'Appointment already canceled' });
       }
 
-      // Atualiza status
       await appointment.update({
-        status: 'cancelado',
-        cancellationReason: req.body.reason || 'Cancelado pelo paciente'
+        status: 'canceled',
+        cancellationReason: req.body.reason || 'Canceled by the patient'
       });
 
-      // Notifica cancelamento
       await sendNotification({
         type: 'APPOINTMENT_CANCELED',
         appointmentId: appointment.id,
@@ -114,16 +103,12 @@ module.exports = {
       return res.json(appointment);
     } catch (error) {
       return res.status(400).json({
-        error: 'Falha ao cancelar agendamento',
+        error: 'Failure to cancel appointment',
         details: error.message
       });
     }
   },
 
-  /**
-   * Marca atendimento como completo
-   * PUT /appointments/:id/complete
-   */
   async complete(req, res) {
     try {
       const appointment = await Appointment.findByPk(req.params.id, {
@@ -134,26 +119,23 @@ module.exports = {
       });
 
       if (!appointment) {
-        return res.status(404).json({ error: 'Agendamento não encontrado' });
+        return res.status(404).json({ error: 'Appointment not found' });
       }
 
-      // Validações
       if (appointment.status === 'cancelado') {
-        return res.status(400).json({ error: 'Atendimento cancelado não pode ser completado' });
+        return res.status(400).json({ error: 'Appointment its canceled' });
       }
 
       if (moment(appointment.date).isAfter(moment())) {
-        return res.status(400).json({ error: 'Atendimento futuro não pode ser completado' });
+        return res.status(400).json({ error: 'Future Appointment cannot be completed' });
       }
 
-      // Atualiza com dados do atendimento
       await appointment.update({
-        status: 'realizado',
+        status: 'finished',
         prescription: req.body.prescription,
         notes: req.body.notes
       });
 
-      // Gera recibo (exemplo simplificado)
       const receipt = {
         patient: appointment.patient.name,
         doctor: appointment.doctor.name,
@@ -164,16 +146,12 @@ module.exports = {
       return res.json({ appointment, receipt });
     } catch (error) {
       return res.status(400).json({
-        error: 'Falha ao completar atendimento',
+        error: 'Failure when completing Appointment',
         details: error.message
       });
     }
   },
 
-  /**
-   * Filtra agendamentos
-   * GET /appointments
-   */
   async filter(req, res) {
     try {
       const {
@@ -231,16 +209,12 @@ module.exports = {
       });
     } catch (error) {
       return res.status(400).json({
-        error: 'Falha ao filtrar agendamentos',
+        error: 'Failure when filtering appointments',
         details: error.message
       });
     }
   },
 
-  /**
-   * Busca agendamento por ID
-   * GET /appointments/:id
-   */
   async getById(req, res) {
     try {
       const appointment = await Appointment.findByPk(req.params.id, {
@@ -259,13 +233,13 @@ module.exports = {
       });
 
       if (!appointment) {
-        return res.status(404).json({ error: 'Agendamento não encontrado' });
+        return res.status(404).json({ error: 'Appointment not found' });
       }
 
       return res.json(appointment);
     } catch (error) {
       return res.status(400).json({
-        error: 'Falha ao buscar agendamento',
+        error: 'Failure when searching Appointment',
         details: error.message
       });
     }

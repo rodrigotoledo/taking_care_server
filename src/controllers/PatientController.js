@@ -2,9 +2,6 @@ const { Patient, Appointment, Pathology } = require('../models');
 const { Op } = require('sequelize');
 
 module.exports = {
-  /**
-   * Cria um novo paciente
-   */
   async create(req, res) {
     try {
       const patient = await Patient.create(req.body);
@@ -17,9 +14,6 @@ module.exports = {
     }
   },
 
-  /**
-   * Lista todos os pacientes (com paginação)
-   */
   async list(req, res) {
     const { page = 1, limit = 10 } = req.query;
     try {
@@ -38,9 +32,6 @@ module.exports = {
     }
   },
 
-  /**
-   * Busca paciente por ID
-   */
   async getById(req, res) {
     try {
       const patient = await Patient.findByPk(req.params.id, {
@@ -59,9 +50,6 @@ module.exports = {
     }
   },
 
-  /**
-   * Atualiza paciente
-   */
   async update(req, res) {
     try {
       const [updated] = await Patient.update(req.body, {
@@ -77,9 +65,6 @@ module.exports = {
     }
   },
 
-  /**
-   * Remove paciente (soft delete)
-   */
   async delete(req, res) {
     try {
       const deleted = await Patient.destroy({
@@ -94,9 +79,6 @@ module.exports = {
     }
   },
 
-  /**
-   * Lista atendimentos do paciente
-   */
   async getAppointments(req, res) {
     const { status } = req.query;
     try {
@@ -118,9 +100,6 @@ module.exports = {
     }
   },
 
-  /**
-   * Associa patologia ao paciente
-   */
   async addPathology(req, res) {
     try {
       const patient = await Patient.findByPk(req.params.id);

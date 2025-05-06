@@ -3,13 +3,8 @@ const { Op } = require('sequelize');
 const jwt = require('jsonwebtoken');
 
 module.exports = {
-  /**
-   * Cria um novo médico
-   * POST /doctors
-   */
   async create(req, res) {
     try {
-      // Verifica CRM único
       const existingDoctor = await Doctor.findOne({
         where: {
           crm: req.body.crm,
@@ -19,7 +14,7 @@ module.exports = {
 
       if (existingDoctor) {
         return res.status(409).json({
-          error: 'CRM já cadastrado nesta UF'
+          error: 'CRM already registered in this UF'
         });
       }
 
@@ -28,7 +23,6 @@ module.exports = {
         crmUf: req.body.crmUf.toUpperCase()
       });
 
-      // Gera token JWT para autenticação imediata
       const token = jwt.sign(
         { id: doctor.id, type: 'doctor' },
         process.env.JWT_SECRET,
@@ -38,16 +32,12 @@ module.exports = {
       return res.status(201).json({ doctor, token });
     } catch (error) {
       return res.status(400).json({
-        error: 'Falha ao cadastrar médico',
+        error: 'Failure to register doctor',
         details: error.message
       });
     }
   },
 
-  /**
-   * Lista médicos com filtros
-   * GET /doctors
-   */
   async list(req, res) {
     const { specialty, search, page = 1, limit = 10 } = req.query;
 
@@ -63,7 +53,7 @@ module.exports = {
 
       const doctors = await Doctor.findAndCountAll({
         where,
-        attributes: { exclude: ['password'] }, // Remove dados sensíveis
+        attributes: { exclude: ['password'] },
         offset: (page - 1) * limit,
         limit: parseInt(limit),
         order: [['name', 'ASC']]
@@ -76,16 +66,12 @@ module.exports = {
       });
     } catch (error) {
       return res.status(500).json({
-        error: 'Erro ao buscar médicos',
+        error: 'Error when seeking doctors',
         details: error.message
       });
     }
   },
 
-  /**
-   * Busca médico por ID
-   * GET /doctors/:id
-   */
   async getById(req, res) {
     try {
       const doctor = await Doctor.findByPk(req.params.id, {
@@ -99,22 +85,18 @@ module.exports = {
       });
 
       if (!doctor) {
-        return res.status(404).json({ error: 'Médico não encontrado' });
+        return res.status(404).json({ error: 'Non found doctor' });
       }
 
       return res.json(doctor);
     } catch (error) {
       return res.status(500).json({
-        error: 'Erro ao buscar médico',
+        error: 'Error when searching for a doctor',
         details: error.message
       });
     }
   },
 
-  /**
-   * Lista atendimentos do médico
-   * GET /doctors/:id/appointments
-   */
   async getAppointments(req, res) {
     const { status, startDate, endDate } = req.query;
 
@@ -144,22 +126,17 @@ module.exports = {
       return res.json(appointments);
     } catch (error) {
       return res.status(500).json({
-        error: 'Erro ao buscar agenda',
+        error: 'Error when searching Appointment',
         details: error.message
       });
     }
   },
 
-  /**
-   * Atualiza disponibilidade do médico
-   * PUT /doctors/:id/availability
-   */
   async updateAvailability(req, res) {
     try {
-      // Validação básica da estrutura
       if (!req.body.availability || typeof req.body.availability !== 'object') {
         return res.status(400).json({
-          error: 'Formato inválido. Use { dia: [horaInicio, horaFim] }'
+          error: 'Invalid format.Use {day: [startHour, endHour]}'
         });
       }
 
@@ -169,7 +146,7 @@ module.exports = {
       );
 
       if (!updated) {
-        return res.status(404).json({ error: 'Médico não encontrado' });
+        return res.status(404).json({ error: 'Non -found doctor' });
       }
 
       return res.json({
@@ -178,7 +155,7 @@ module.exports = {
       });
     } catch (error) {
       return res.status(400).json({
-        error: 'Falha ao atualizar disponibilidade',
+        error: 'Failure to update availability',
         details: error.message
       });
     }
