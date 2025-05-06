@@ -58,6 +58,6 @@ app.use(cors());
 app.use(express.json());
 
 // Rotas
-app.use('/api', require('./routes/api'));
+app.use('/api', apiRoutes);
 
 module.exports = app;

@@ -34,6 +34,14 @@ module.exports = {
         type: Sequelize.STRING,
         unique: true
       },
+      password: {
+        type: Sequelize.STRING,
+        allowNull: false
+      },
+      password_confirmation: {
+        type: Sequelize.STRING,
+        allowNull: false
+      },
       phone: {
         type: Sequelize.STRING(20)
       },

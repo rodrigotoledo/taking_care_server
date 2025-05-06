@@ -2,12 +2,13 @@ const { Doctor, Patient } = require('../models');
 const { generateToken } = require('../middlewares/auth');
 
 module.exports = {
-  login: async (req, res) => {
+  async login(req, res){
+    console.log(req.body)
     try {
       const { email, password, userType } = req.body;
 
       // 1. Busca usuário
-      const Model = userType === 'doctor' ? Doctor : Patient;
+      const Model = userType === 'patient' ? Patient : Doctor;
       const user = await Model.findOne({ where: { email } });
 
       // 2. Verifica senha (simplificado)

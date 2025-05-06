@@ -4,7 +4,7 @@ const sequelize = require('../../config/sequelize')
 const Patient = sequelize.define('Patient', {
   // Dados básicos
   name: { type: DataTypes.STRING, allowNull: false },
-  cpf: { type: DataTypes.STRING(11), unique: true },
+  cpf: { type: DataTypes.STRING, unique: true },
   birthDate: { type: DataTypes.DATEONLY },
   gender: { type: DataTypes.ENUM('M', 'F', 'Other', 'Prefer not to say') },
 

@@ -52,7 +52,7 @@ const Doctor = sequelize.define('Doctor', {
     defaultValue: true
   },
   availability: {
-    type: DataTypes.JSON,
+    type: DataTypes.JSONB,
   },
 
   // ===== DADOS DE ACESSO =====

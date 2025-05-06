@@ -68,7 +68,7 @@ cp .env.example .env
 1. Create databases (dev/test/prod):
 
 ```bash
-npx sequelize-cli db:drop && npx sequelize-cli db:create && npx sequelize-cli db:migrate
+npx sequelize-cli db:drop && npx sequelize-cli db:create && npx sequelize-cli db:migrate && npx sequelize-cli db:seed:all
 ```
 
 2. Seed initial data (optional):
