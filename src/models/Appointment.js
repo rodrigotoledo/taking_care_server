@@ -2,8 +2,33 @@ const { DataTypes } = require('sequelize');
 const sequelize = require('../../config/sequelize')
 
 const Appointment = sequelize.define('Appointment', {
+  userId: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    references: {
+      model: 'users',
+      key: 'id',
+    },
+    field: 'user_id'
+  },
+  location: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  professional: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  specialty: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
   date: {
-    type: DataTypes.DATE,
+    type: DataTypes.DATEONLY,
+    allowNull: false,
+  },
+  time: {
+    type: DataTypes.STRING,
     allowNull: false,
   },
   duration: {
@@ -27,16 +52,20 @@ const Appointment = sequelize.define('Appointment', {
   },
   examRequest: {
     type: DataTypes.TEXT,
+    field: 'exam_request'
   },
   nextAppointment: {
     type: DataTypes.DATE,
+    field: 'next_appointment'
   }
 }, {
   tableName: 'appointments',
   indexes: [
     {
-      unique: true,
-      fields: ['date', 'doctor_id'] // Prevents schedule overlapping
+      fields: ['user_id', 'date']
+    },
+    {
+      fields: ['status']
     }
   ]
 });

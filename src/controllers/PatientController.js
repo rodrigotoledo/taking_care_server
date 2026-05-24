@@ -1,4 +1,4 @@
-const { Patient, Appointment, Pathology } = require('../models');
+const { Patient, Pathology } = require('../models');
 const { Op } = require('sequelize');
 
 module.exports = {
@@ -80,21 +80,11 @@ module.exports = {
   },
 
   async getAppointments(req, res) {
-    const { status } = req.query;
     try {
-      const where = { patientId: req.params.id };
-      if (status) where.status = status;
-
-      const appointments = await Appointment.findAll({
-        where,
-        include: [{
-          model: Doctor,
-          as: 'doctor',
-          attributes: ['name', 'specialty']
-        }],
-        order: [['date', 'DESC']]
+      return res.status(410).json({
+        error: 'Patient appointments endpoint is deprecated',
+        details: 'Appointments now belong to users. Query /api/appointments with an authenticated user instead.',
       });
-      return res.json(appointments);
     } catch (error) {
       return res.status(500).json({ error: 'Erro ao buscar atendimentos' });
     }

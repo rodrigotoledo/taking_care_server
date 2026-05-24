@@ -24,7 +24,7 @@ const allowedMimeTypes = new Set([
 
 export const authUpload = multer({
   storage,
-  limits: { fileSize: 8 * 1024 * 1024 },
+  limits: { fileSize: 50 * 1024 * 1024 },
   fileFilter: (_req, file, cb) => {
     if (!allowedMimeTypes.has(file.mimetype)) {
       cb(new Error('Invalid file type. Allowed: PDF, JPEG, PNG, WEBP'))

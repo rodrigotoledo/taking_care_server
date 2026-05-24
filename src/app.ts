@@ -5,29 +5,18 @@ import { DataTypes } from 'sequelize'
 import sequelize = require('../config/sequelize')
 import apiRoutes = require('./routes/api')
 import authRoutes from './modules/auth/auth.routes'
-import './modules/auth/models'
+import { User } from './modules/auth/models'
 
-const { Patient, Doctor, Appointment, Pathology } = require('./models')
+const { Patient, Appointment, Pathology } = require('./models')
 
-// Legacy domain associations
-Doctor.hasMany(Appointment, {
-  foreignKey: 'doctorId',
+User.hasMany(Appointment, {
+  foreignKey: 'userId',
   as: 'appointments',
 })
 
-Appointment.belongsTo(Doctor, {
-  foreignKey: 'doctorId',
-  as: 'doctor',
-})
-
-Patient.hasMany(Appointment, {
-  foreignKey: 'patientId',
-  as: 'appointments',
-})
-
-Appointment.belongsTo(Patient, {
-  foreignKey: 'patientId',
-  as: 'patient',
+Appointment.belongsTo(User, {
+  foreignKey: 'userId',
+  as: 'user',
 })
 
 const PatientPathology =

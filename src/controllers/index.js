@@ -4,11 +4,13 @@ const PatientController = require('./PatientController');
 const DoctorController = require('./DoctorController');
 const AppointmentController = require('./AppointmentController');
 const PathologyController = require('./PathologyController');
+const CareLocationController = require('./CareLocationController');
 
 module.exports = {
   AuthController,
   PatientController,
   DoctorController,
   AppointmentController,
-  PathologyController
+  PathologyController,
+  CareLocationController
 };

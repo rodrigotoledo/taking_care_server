@@ -13,9 +13,11 @@ const schemas = {
   }),
 
   createAppointment: Joi.object({
-    doctorId: Joi.number().integer().required(),
-    patientId: Joi.number().integer().required(),
-    date: Joi.date().iso().greater('now').required(),
+    location: Joi.string().trim().min(3).max(255).required(),
+    professional: Joi.string().trim().min(3).max(255).required(),
+    specialty: Joi.string().trim().min(2).max(255).required(),
+    date: Joi.date().iso().required(),
+    time: Joi.string().pattern(/^([01]\d|2[0-3]):([0-5]\d)$/).required(),
     notes: Joi.string().max(500)
   })
 };

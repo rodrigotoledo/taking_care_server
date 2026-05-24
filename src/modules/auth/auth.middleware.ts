@@ -6,7 +6,7 @@ declare module 'express-serve-static-core' {
     auth?: {
       userId: number
       email: string
-      userType: 'user' | 'clinic' | 'hospital' | 'professional' | 'admin'
+      userType: 'user' | 'patient' | 'responsible' | 'clinic' | 'hospital' | 'professional' | 'admin'
     }
   }
 }

@@ -1,7 +1,7 @@
 import { DataTypes, Model, Optional } from 'sequelize'
 import sequelize = require('../../../../config/sequelize')
 
-export const USER_TYPES = ['user', 'clinic', 'hospital', 'professional', 'admin'] as const
+export const USER_TYPES = ['user', 'patient', 'responsible', 'clinic', 'hospital', 'professional', 'admin'] as const
 export type UserType = (typeof USER_TYPES)[number]
 
 interface UserAttributes {
@@ -9,6 +9,7 @@ interface UserAttributes {
   email: string
   passwordHash: string
   userType: UserType
+  isAdmin: boolean
   isActive: boolean
   resetPasswordTokenHash: string | null
   resetPasswordExpiresAt: Date | null
@@ -19,7 +20,7 @@ interface UserAttributes {
 
 type UserCreationAttributes = Optional<
   UserAttributes,
-  'id' | 'isActive' | 'resetPasswordTokenHash' | 'resetPasswordExpiresAt' | 'createdAt' | 'updatedAt' | 'deletedAt'
+  'id' | 'isAdmin' | 'isActive' | 'resetPasswordTokenHash' | 'resetPasswordExpiresAt' | 'createdAt' | 'updatedAt' | 'deletedAt'
 >
 
 export class UserModel extends Model<UserAttributes, UserCreationAttributes> implements UserAttributes {
@@ -27,6 +28,7 @@ export class UserModel extends Model<UserAttributes, UserCreationAttributes> imp
   declare email: string
   declare passwordHash: string
   declare userType: UserType
+  declare isAdmin: boolean
   declare isActive: boolean
   declare resetPasswordTokenHash: string | null
   declare resetPasswordExpiresAt: Date | null
@@ -57,7 +59,12 @@ const User =
       userType: {
         type: DataTypes.ENUM(...USER_TYPES),
         allowNull: false,
-        defaultValue: 'user',
+        defaultValue: 'patient',
+      },
+      isAdmin: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
       },
       isActive: {
         type: DataTypes.BOOLEAN,

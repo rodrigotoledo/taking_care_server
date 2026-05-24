@@ -8,7 +8,8 @@
     "dev": "nodemon --watch src --ext ts,js --exec \"tsx src/server.ts\"",
     "build": "tsc -p tsconfig.json",
     "start:dist": "node dist/server.js",
-    "migrate": "npx sequelize-cli db:migrate"
+    "migrate": "npx sequelize-cli db:migrate",
+    "db:reset": "npx sequelize-cli db:drop && npx sequelize-cli db:create && npx sequelize-cli db:migrate && npx sequelize-cli db:seed:all"
   },
   "keywords": [],
   "author": "",

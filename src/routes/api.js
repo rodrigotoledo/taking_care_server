@@ -5,7 +5,8 @@ const {
   PatientController,
   DoctorController,
   AppointmentController,
-  PathologyController
+  PathologyController,
+  CareLocationController
 } = require('../controllers');
 
 // ===== [ MIDDLEWARES ] =====
@@ -13,10 +14,12 @@ const { validateRequest } = require('../middlewares/validator');
 const { authenticate } = require('../middlewares/auth');
 
 router.post('/login', AuthController.login);
+router.post('/signup', AuthController.signup);
 router.post('/logout', (req, res) => {
   // Na prática, o logout é client-side (apagar o token)
   return res.json({ message: 'Logout finished' });
 });
+router.get('/auth/professionals', AuthController.listProfessionals);
 
 // ===== [ PACIENTES ] =====
 router.post('/patients', validateRequest('createPatient'), PatientController.create);
@@ -46,5 +49,9 @@ router.get('/appointments/:id', authenticate, AppointmentController.getById);
 router.get('/pathologies', PathologyController.list);
 router.post('/pathologies', authenticate, PathologyController.create);
 router.get('/pathologies/:id/patients', authenticate, PathologyController.getPatients);
+
+// ===== [ CARE LOCATIONS ] =====
+router.get('/care-locations', CareLocationController.list);
+router.get('/care-locations/:id', CareLocationController.getById);
 
 module.exports = router;

@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { forgotPassword, me, resetPassword, signin, signup, updatePassword, updateProfile } from './auth.controller'
+import { forgotPassword, listProfessionals, me, resetPassword, signin, signup, updatePassword, updateProfile } from './auth.controller'
 import { authenticateAuth } from './auth.middleware'
 import { authUpload } from './auth.upload'
 
@@ -17,6 +17,7 @@ authRoutes.post('/signin', signin)
 authRoutes.post('/forgot-password', forgotPassword)
 authRoutes.post('/reset-password', resetPassword)
 authRoutes.get('/me', authenticateAuth, me)
+authRoutes.get('/professionals', authenticateAuth, listProfessionals)
 authRoutes.put(
   '/me/profile',
   authenticateAuth,

@@ -3,36 +3,23 @@ const cors = require('cors');
 const sequelize = require('../config/sequelize');
 const apiRoutes = require('./routes/api');
 const { DataTypes } = require('sequelize');
+const { User } = require('./modules/auth/models');
 
 sequelize.sync({ alter: true })
   .then(() => console.log(`Database ${process.env.APP_NAME} synced!`))
   .catch(err => console.error("Sync failed:", err));
 
 // Após definir todos os modelos:
-const { Patient, Doctor, Appointment, Pathology } = require('./models');
+const { Patient, Appointment, Pathology } = require('./models');
 
-// Médico tem muitos Atendimentos
-Doctor.hasMany(Appointment, {
-  foreignKey: 'doctorId',
-  as: 'appointments' // Alias para a associação
-});
-
-// Atendimento pertence a um Médico
-Appointment.belongsTo(Doctor, {
-  foreignKey: 'doctorId',
-  as: 'doctor'
-});
-
-// Paciente tem muitos Atendimentos
-Patient.hasMany(Appointment, {
-  foreignKey: 'patientId',
+User.hasMany(Appointment, {
+  foreignKey: 'userId',
   as: 'appointments'
 });
 
-// Atendimento pertence a um Paciente
-Appointment.belongsTo(Patient, {
-  foreignKey: 'patientId',
-  as: 'patient'
+Appointment.belongsTo(User, {
+  foreignKey: 'userId',
+  as: 'user'
 });
 
 // Relação muitos-para-muitos: Paciente <-> Patologia

@@ -76,12 +76,6 @@ module.exports = {
     try {
       const doctor = await Doctor.findByPk(req.params.id, {
         attributes: { exclude: ['password'] },
-        include: [{
-          model: Appointment,
-          as: 'appointments',
-          limit: 5,
-          order: [['date', 'DESC']]
-        }]
       });
 
       if (!doctor) {
@@ -98,32 +92,11 @@ module.exports = {
   },
 
   async getAppointments(req, res) {
-    const { status, startDate, endDate } = req.query;
-
     try {
-      const where = { doctorId: req.params.id };
-
-      if (status) where.status = status;
-      if (startDate && endDate) {
-        where.date = {
-          [Op.between]: [
-            new Date(startDate),
-            new Date(endDate + 'T23:59:59')
-          ]
-        };
-      }
-
-      const appointments = await Appointment.findAll({
-        where,
-        include: [{
-          model: Patient,
-          as: 'patient',
-          attributes: ['name', 'id']
-        }],
-        order: [['date', 'ASC']]
+      return res.status(410).json({
+        error: 'Doctor appointments endpoint is deprecated',
+        details: 'Appointments now belong to users. Query /api/appointments with an authenticated user instead.',
       });
-
-      return res.json(appointments);
     } catch (error) {
       return res.status(500).json({
         error: 'Error when searching Appointment',

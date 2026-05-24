@@ -1,6 +1,6 @@
 import type { Request, Response } from 'express'
 import { Op } from 'sequelize'
-import { User, UserProfile } from './models'
+import { User, UserProfile, UserProfileProfessional } from './models'
 import type { UserType } from './models/User'
 import {
   comparePassword,
@@ -9,7 +9,7 @@ import {
   makePasswordResetToken,
   signAuthToken,
 } from './auth.utils'
-import { isValidCpf, isValidInternationalPhone, isValidRg } from './auth.validation'
+import { isValidCpf, isValidPhone, isValidRg } from './auth.validation'
 
 interface UploadFiles {
   cpfDocument?: Express.Multer.File[]
@@ -21,12 +21,13 @@ const getUploadedDocumentUrl = (file: Express.Multer.File | undefined): string |
   return `/uploads/auth-documents/${file.filename}`
 }
 
-const validUserTypes: UserType[] = ['user', 'clinic', 'hospital', 'professional', 'admin']
+const validUserTypes: UserType[] = ['user', 'patient', 'responsible', 'clinic', 'hospital', 'professional', 'admin']
 
 const sanitizeUserResponse = (user: any, profile: any) => ({
   id: user.id,
   email: user.email,
   userType: user.userType,
+  isAdmin: user.isAdmin,
   isActive: user.isActive,
   profile: profile
     ? {
@@ -49,7 +50,7 @@ export const signup = async (req: Request, res: Response): Promise<void> => {
     const cpfDocument = files.cpfDocument?.[0]
     const rgDocument = files.rgDocument?.[0]
 
-    const { email, password, confirmPassword, userType = 'user', displayName, phone, cpf, rg } = req.body
+    const { email, password, confirmPassword, userType = 'patient', displayName, phone, cpf, rg } = req.body
 
     if (!email || !password || !phone || !cpf || !rg) {
       res.status(400).json({ error: 'email, password, phone, cpf and rg are required' })
@@ -71,7 +72,7 @@ export const signup = async (req: Request, res: Response): Promise<void> => {
       return
     }
 
-    if (!isValidInternationalPhone(phone)) {
+    if (!isValidPhone(phone)) {
       res.status(400).json({ error: 'Invalid phone number format' })
       return
     }
@@ -108,6 +109,7 @@ export const signup = async (req: Request, res: Response): Promise<void> => {
       email,
       passwordHash,
       userType: userType as UserType,
+      isAdmin: userType === 'admin',
       isActive: true,
     })
 
@@ -268,6 +270,41 @@ export const me = async (req: Request, res: Response): Promise<void> => {
   }
 }
 
+export const listProfessionals = async (_req: Request, res: Response): Promise<void> => {
+  try {
+    const professionals = await User.findAll({
+      where: {
+        userType: 'professional',
+        isActive: true,
+      },
+      include: [
+        {
+          model: UserProfile,
+          as: 'profile',
+          include: [
+            {
+              model: UserProfileProfessional,
+              as: 'professionalProfile',
+            },
+          ],
+        },
+      ],
+      order: [['id', 'ASC']],
+    })
+
+    const data = professionals.map((user: any) => ({
+      id: user.id,
+      email: user.email,
+      displayName: user.profile?.displayName ?? null,
+      specialty: user.profile?.professionalProfile?.specialty ?? null,
+    }))
+
+    res.json({ data })
+  } catch (error: any) {
+    res.status(500).json({ error: error.message || 'Failed to list professionals' })
+  }
+}
+
 export const updateProfile = async (req: Request, res: Response): Promise<void> => {
   try {
     const auth = req.auth
@@ -287,7 +324,7 @@ export const updateProfile = async (req: Request, res: Response): Promise<void> 
       return
     }
 
-    if (phone !== undefined && phone !== null && String(phone).trim() !== '' && !isValidInternationalPhone(String(phone))) {
+    if (phone !== undefined && phone !== null && String(phone).trim() !== '' && !isValidPhone(String(phone))) {
       res.status(400).json({ error: 'Invalid phone number format' })
       return
     }

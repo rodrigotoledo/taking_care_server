@@ -1,23 +1,46 @@
-const { Appointment, Patient, Doctor } = require('../models');
+const { Appointment } = require('../models');
 const { Op } = require('sequelize');
-const moment = require('moment');
-const { sendNotification } = require('../services/notificationService');
+
+const APPOINTMENT_STATUSES = ['draft', 'doing', 'completed', 'canceled'];
+
+const requireAuthenticatedUserId = (req, res) => {
+  const userId = req.user?.id;
+
+  if (!userId) {
+    res.status(401).json({ error: 'Unauthorized access' });
+    return null;
+  }
+
+  return userId;
+};
+
+const normalizeNotes = (value) => {
+  if (typeof value !== 'string') return null;
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : null;
+};
 
 module.exports = {
   async create(req, res) {
     try {
-      const { doctorId, patientId, date, notes } = req.body;
+      const userId = requireAuthenticatedUserId(req, res);
+      if (!userId) {
+        return;
+      }
 
-      // 1. Checks time conflict
+      const { location, professional, specialty, date, time, notes } = req.body;
+
+      if (!location || !professional || !specialty || !date || !time) {
+        return res.status(400).json({
+          error: 'Missing required fields: location, professional, specialty, date, time'
+        });
+      }
+
       const existingAppointment = await Appointment.findOne({
         where: {
-          doctorId,
-          date: {
-            [Op.between]: [
-              moment(date).subtract(29, 'minutes').toDate(),
-              moment(date).add(29, 'minutes').toDate()
-            ]
-          },
+          userId,
+          date,
+          time,
           status: { [Op.in]: ['draft', 'doing'] }
         }
       });
@@ -27,45 +50,21 @@ module.exports = {
           error: 'Time conflict',
           conflictingAppointment: {
             id: existingAppointment.id,
-            date: existingAppointment.date
+            date: existingAppointment.date,
+            time: existingAppointment.time
           }
         });
       }
 
-      // 2. Check if the doctor is available at this time
-      const doctor = await Doctor.findByPk(doctorId);
-      if (!doctor.availability) {
-        return res.status(400).json({ error: 'Doctor has no registered availability' });
-      }
-
-      const appointmentDay = moment(date).format('ddd').toLowerCase().substring(0, 3);
-      const availableHours = doctor.availability[appointmentDay];
-
-      if (!availableHours) {
-        return res.status(400).json({ error: 'Doctor does not attend this day' });
-      }
-
-      const appointmentHour = moment(date).hours();
-      if (appointmentHour < availableHours[0] || appointmentHour >= availableHours[1]) {
-        return res.status(400).json({
-          error: 'Out of time available',
-          availableHours
-        });
-      }
-
-      // 3. Cria o agendamento
       const appointment = await Appointment.create({
-        doctorId,
-        patientId,
+        userId,
+        location,
+        professional,
+        specialty,
         date,
-        notes,
+        time,
+        notes: normalizeNotes(notes),
         status: 'draft'
-      });
-
-      // 4. Notifica as partes (médico e paciente)
-      await sendNotification({
-        type: 'APPOINTMENT_CREATED',
-        appointmentId: appointment.id
       });
 
       return res.status(201).json(appointment);
@@ -80,7 +79,18 @@ module.exports = {
 
   async cancel(req, res) {
     try {
-      const appointment = await Appointment.findByPk(req.params.id);
+      const userId = requireAuthenticatedUserId(req, res);
+      if (!userId) {
+        return;
+      }
+
+      const appointment = await Appointment.findOne({
+        where: {
+          id: req.params.id,
+          userId,
+        },
+      });
+
       if (!appointment) {
         return res.status(404).json({ error: 'Appointment not found' });
       }
@@ -89,15 +99,13 @@ module.exports = {
         return res.status(400).json({ error: 'Appointment already canceled' });
       }
 
+      if (appointment.status === 'completed') {
+        return res.status(400).json({ error: 'Completed appointment cannot be canceled' });
+      }
+
       await appointment.update({
         status: 'canceled',
-        cancellationReason: req.body.reason || 'Canceled by the patient'
-      });
-
-      await sendNotification({
-        type: 'APPOINTMENT_CANCELED',
-        appointmentId: appointment.id,
-        reason: req.body.reason
+        notes: normalizeNotes(req.body.reason) || appointment.notes
       });
 
       return res.json(appointment);
@@ -111,11 +119,16 @@ module.exports = {
 
   async complete(req, res) {
     try {
-      const appointment = await Appointment.findByPk(req.params.id, {
-        include: [
-          { model: Patient, as: 'patient' },
-          { model: Doctor, as: 'doctor' }
-        ]
+      const userId = requireAuthenticatedUserId(req, res);
+      if (!userId) {
+        return;
+      }
+
+      const appointment = await Appointment.findOne({
+        where: {
+          id: req.params.id,
+          userId,
+        },
       });
 
       if (!appointment) {
@@ -128,18 +141,10 @@ module.exports = {
 
       await appointment.update({
         status: 'completed',
-        prescription: req.body.prescription,
-        notes: req.body.notes
+        notes: normalizeNotes(req.body.notes) || appointment.notes
       });
 
-      const receipt = {
-        patient: appointment.patient.name,
-        doctor: appointment.doctor.name,
-        date: appointment.date,
-        prescription: appointment.prescription
-      };
-
-      return res.json({ appointment, receipt });
+      return res.json(appointment);
     } catch (error) {
       return res.status(400).json({
         error: 'Failure when completing Appointment',
@@ -150,57 +155,54 @@ module.exports = {
 
   async filter(req, res) {
     try {
+      const userId = requireAuthenticatedUserId(req, res);
+      if (!userId) {
+        return;
+      }
+
       const {
-        doctorId,
-        patientId,
         status,
         startDate,
         endDate,
+        search,
         page = 1,
-        limit = 20
+        limit = 50
       } = req.query;
 
-      const where = {};
-      if (doctorId) where.doctorId = doctorId;
-      if (patientId) where.patientId = patientId;
+      const limitNumber = Number.parseInt(limit, 10) || 50;
+      const pageNumber = Number.parseInt(page, 10) || 1;
+
+      const where = { userId };
       if (status) where.status = status;
 
-      // Filtro por data
       if (startDate && endDate) {
         where.date = {
-          [Op.between]: [
-            moment(startDate).startOf('day').toDate(),
-            moment(endDate).endOf('day').toDate()
-          ]
+          [Op.between]: [startDate, endDate]
         };
       } else if (startDate) {
-        where.date = { [Op.gte]: moment(startDate).startOf('day').toDate() };
+        where.date = { [Op.gte]: startDate };
       } else if (endDate) {
-        where.date = { [Op.lte]: moment(endDate).endOf('day').toDate() };
+        where.date = { [Op.lte]: endDate };
+      }
+
+      if (search) {
+        where[Op.or] = [
+          { location: { [Op.iLike]: `%${search}%` } },
+          { professional: { [Op.iLike]: `%${search}%` } },
+          { specialty: { [Op.iLike]: `%${search}%` } },
+        ];
       }
 
       const appointments = await Appointment.findAndCountAll({
         where,
-        include: [
-          {
-            model: Patient,
-            as: 'patient',
-            attributes: ['name', 'id']
-          },
-          {
-            model: Doctor,
-            as: 'doctor',
-            attributes: ['name', 'specialty']
-          }
-        ],
-        order: [['date', 'DESC']],
-        offset: (page - 1) * limit,
-        limit: parseInt(limit)
+        order: [['date', 'ASC'], ['time', 'ASC'], ['id', 'DESC']],
+        offset: (pageNumber - 1) * limitNumber,
+        limit: limitNumber
       });
 
       return res.json({
         total: appointments.count,
-        pages: Math.ceil(appointments.count / limit),
+        pages: Math.ceil(appointments.count / limitNumber),
         data: appointments.rows
       });
     } catch (error) {
@@ -213,19 +215,16 @@ module.exports = {
 
   async getById(req, res) {
     try {
-      const appointment = await Appointment.findByPk(req.params.id, {
-        include: [
-          {
-            model: Patient,
-            as: 'patient',
-            attributes: { exclude: ['password'] }
-          },
-          {
-            model: Doctor,
-            as: 'doctor',
-            attributes: { exclude: ['password'] }
-          }
-        ]
+      const userId = requireAuthenticatedUserId(req, res);
+      if (!userId) {
+        return;
+      }
+
+      const appointment = await Appointment.findOne({
+        where: {
+          id: req.params.id,
+          userId,
+        },
       });
 
       if (!appointment) {
@@ -243,18 +242,28 @@ module.exports = {
 
   async updateStatus(req, res) {
     try {
+      const userId = requireAuthenticatedUserId(req, res);
+      if (!userId) {
+        return;
+      }
+
       const { id } = req.params;
       const { status } = req.body;
 
-      const validStatuses = ['draft', 'doing', 'completed', 'canceled'];
-      if (!validStatuses.includes(status)) {
+      if (!APPOINTMENT_STATUSES.includes(status)) {
         return res.status(400).json({
           error: 'Invalid status',
-          validStatuses
+          validStatuses: APPOINTMENT_STATUSES
         });
       }
 
-      const appointment = await Appointment.findByPk(id);
+      const appointment = await Appointment.findOne({
+        where: {
+          id,
+          userId,
+        },
+      });
+
       if (!appointment) {
         return res.status(404).json({ error: 'Appointment not found' });
       }
@@ -263,13 +272,11 @@ module.exports = {
         return res.status(400).json({ error: 'Cannot change status of canceled appointment' });
       }
 
-      await appointment.update({ status });
+      if (appointment.status === 'completed' && status !== 'completed') {
+        return res.status(400).json({ error: 'Cannot change status of completed appointment' });
+      }
 
-      await sendNotification({
-        type: 'APPOINTMENT_STATUS_CHANGED',
-        appointmentId: appointment.id,
-        newStatus: status
-      });
+      await appointment.update({ status });
 
       return res.json(appointment);
     } catch (error) {
