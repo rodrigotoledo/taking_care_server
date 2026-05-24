@@ -12,13 +12,12 @@ const Appointment = sequelize.define('Appointment', {
   },
   status: {
     type: DataTypes.ENUM(
-      'scheduled',
-      'confirmed',
-      'canceled',
-      'finished',
-      'missing'
+      'draft',
+      'doing',
+      'completed',
+      'canceled'
     ),
-    defaultValue: 'scheduled'
+    defaultValue: 'draft'
   },
   notes: {
     type: DataTypes.TEXT,

@@ -18,7 +18,7 @@ module.exports = {
               moment(date).add(29, 'minutes').toDate()
             ]
           },
-          status: { [Op.in]: ['scheduled', 'confirmed'] }
+          status: { [Op.in]: ['draft', 'doing'] }
         }
       });
 
@@ -59,7 +59,7 @@ module.exports = {
         patientId,
         date,
         notes,
-        status: 'scheduled'
+        status: 'draft'
       });
 
       // 4. Notifica as partes (médico e paciente)
@@ -85,7 +85,7 @@ module.exports = {
         return res.status(404).json({ error: 'Appointment not found' });
       }
 
-      if (appointment.status === 'cancelado') {
+      if (appointment.status === 'canceled') {
         return res.status(400).json({ error: 'Appointment already canceled' });
       }
 
@@ -122,16 +122,12 @@ module.exports = {
         return res.status(404).json({ error: 'Appointment not found' });
       }
 
-      if (appointment.status === 'cancelado') {
-        return res.status(400).json({ error: 'Appointment its canceled' });
-      }
-
-      if (moment(appointment.date).isAfter(moment())) {
-        return res.status(400).json({ error: 'Future Appointment cannot be completed' });
+      if (appointment.status === 'canceled') {
+        return res.status(400).json({ error: 'Appointment is canceled' });
       }
 
       await appointment.update({
-        status: 'finished',
+        status: 'completed',
         prescription: req.body.prescription,
         notes: req.body.notes
       });
@@ -240,6 +236,45 @@ module.exports = {
     } catch (error) {
       return res.status(400).json({
         error: 'Failure when searching Appointment',
+        details: error.message
+      });
+    }
+  },
+
+  async updateStatus(req, res) {
+    try {
+      const { id } = req.params;
+      const { status } = req.body;
+
+      const validStatuses = ['draft', 'doing', 'completed', 'canceled'];
+      if (!validStatuses.includes(status)) {
+        return res.status(400).json({
+          error: 'Invalid status',
+          validStatuses
+        });
+      }
+
+      const appointment = await Appointment.findByPk(id);
+      if (!appointment) {
+        return res.status(404).json({ error: 'Appointment not found' });
+      }
+
+      if (appointment.status === 'canceled' && status !== 'canceled') {
+        return res.status(400).json({ error: 'Cannot change status of canceled appointment' });
+      }
+
+      await appointment.update({ status });
+
+      await sendNotification({
+        type: 'APPOINTMENT_STATUS_CHANGED',
+        appointmentId: appointment.id,
+        newStatus: status
+      });
+
+      return res.json(appointment);
+    } catch (error) {
+      return res.status(400).json({
+        error: 'Failure when updating appointment status',
         details: error.message
       });
     }

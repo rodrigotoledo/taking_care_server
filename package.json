@@ -4,8 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node src/server.js",
-    "dev": "nodemon src/server.js",
+    "start": "tsx src/server.ts",
+    "dev": "nodemon --watch src --ext ts,js --exec \"tsx src/server.ts\"",
+    "build": "tsc -p tsconfig.json",
+    "start:dist": "node dist/server.js",
     "migrate": "npx sequelize-cli db:migrate"
   },
   "keywords": [],
@@ -14,14 +16,18 @@
   "type": "commonjs",
   "dependencies": {
     "@sendgrid/mail": "^8.1.5",
-    "aws-sdk": "^2.1692.0",
+    "@types/multer": "^2.1.0",
+    "aws-sdk": "^1.18.0",
+    "bcryptjs": "^3.0.3",
     "cors": "^2.8.5",
     "cpf-cnpj-validator": "^1.0.3",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
-    "firebase-admin": "^13.3.0",
+    "firebase-admin": "^10.3.0",
     "joi": "^17.13.3",
     "jsonwebtoken": "^9.0.2",
+    "libphonenumber-js": "^1.13.3",
+    "multer": "^2.1.1",
     "nodemailer": "^7.0.2",
     "onesignal-node": "^3.4.0",
     "pg": "^8.15.6",
@@ -31,6 +37,13 @@
   },
   "devDependencies": {
     "@faker-js/faker": "^9.7.0",
-    "nodemon": "^3.1.10"
+    "@types/bcryptjs": "^2.4.6",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^25.9.1",
+    "nodemon": "^3.1.10",
+    "tsx": "^4.22.3",
+    "typescript": "^6.0.3"
   }
 }

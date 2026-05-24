@@ -38,6 +38,7 @@ router.put('/doctors/:id/availability', authenticate, DoctorController.updateAva
 router.post('/appointments', authenticate, validateRequest('createAppointment'), AppointmentController.create);
 router.put('/appointments/:id/cancel', authenticate, AppointmentController.cancel);
 router.put('/appointments/:id/complete', authenticate, AppointmentController.complete);
+router.put('/appointments/:id/status', authenticate, AppointmentController.updateStatus);
 router.get('/appointments', authenticate, AppointmentController.filter);
 router.get('/appointments/:id', authenticate, AppointmentController.getById);
 
